@@ -2,6 +2,8 @@ version: '3'
 
 services:
     web:
+        depends_on:
+            - db
         build: "./build/web"
         container_name: "web"
         ports:
@@ -9,3 +11,28 @@ services:
             - "443:443"
         volumes:
             - "./volume:/var/www/html/"
+    db:
+        image: mysql:5
+        container_name: "db"
+        command: mysqld --sql_mode=""
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: test
+            tz: "Asia/Tokyo"
+        volumes:
+            - "./initdb:/docker-entrypoint-initdb.d"
+        restart: always
+    phpmyadmin:
+        depends_on:
+            - db
+        container_name: "myadmin"
+        image: phpmyadmin/phpmyadmin
+        ports:
+            - "1080:80"
+        links:
+            - db
+        environment:
+            - PMA_ARBITRARY=1
+            - PMA_HOST=db
+            - PMA_USER=root
+            - PMA_PASSWORD=root
